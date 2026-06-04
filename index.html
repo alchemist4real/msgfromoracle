@@ -528,8 +528,8 @@
                 };
 
                 const ttsData = await api('tts', ttsPayload);
-                const imgPrompt = `A hauntingly beautiful abstract artwork for a poem titled "${oracle.card_name}". Ethereal, minimal, dark void with subtle light, cinematic atmosphere, moody, fine art photography style, black and white with subtle warm tones, dramatic lighting.`;
-                const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=800&height=600&nologo=true`;
+                const safeSeed = encodeURIComponent(oracle.card_name.replace(/[^a-zA-Z0-9]/g, ''));
+                const imgUrl = `https://picsum.photos/seed/${safeSeed}/800/600?grayscale`;
                 const ttsPart = ttsData?.candidates?.[0]?.content?.parts?.[0];
                 const whisperUrl = ttsPart ? makeWavUrl(ttsPart.inlineData.data, ttsPart.inlineData.mimeType) : null;
 
@@ -538,14 +538,14 @@
                 el.prophecyText.textContent = oracle.written_interpretation;
                 el.userNameDisplay.textContent = name;
                 el.aspirationDisplay.textContent = `"${wish}"`;
-                el.cardImage.src = imgUrl;
 
                 await new Promise(resolve => {
                     el.cardImage.onload = resolve;
                     el.cardImage.onerror = () => {
-                        el.cardImage.src = `https://placehold.co/800x600/0a0a0a/333333?text=${encodeURIComponent(oracle.card_name)}`;
+                        el.cardImage.src = `https://placehold.co/800x600/0a0a0a/333333?text=Vision+Clouded`;
                         resolve();
                     };
+                    el.cardImage.src = imgUrl;
                 });
 
                 showScreen(el.resultScreen);
