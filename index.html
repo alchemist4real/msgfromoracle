@@ -1,139 +1,432 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Msg from Oracle</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Msg from Oracle — The Prophecy Machine</title>
+    <meta name="description" content="Ask the Oracle a question. Receive a prophecy you never asked for.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23fff' stroke-width='2'%3E%3Ccircle cx='20' cy='20' r='18'/%3E%3Cpath d='M20 8 L20 14 M20 26 L20 32 M8 20 L14 20 M26 20 L32 20' stroke-width='1.5'/%3E%3Ccircle cx='20' cy='20' r='4' fill='%23fff'/%3E%3C/svg%3E">
+    <meta name="theme-color" content="#0a0a0a">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&family=Quattrocento:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         :root {
-            --bg-main: #1A1A2E;      /* Deep Navy Blue */
-            --text-primary: #E0DDF0; /* Light Lavender/Off-white */
-            --accent-light: #F472B6; /* Hot Pink */
-            --accent-dark: #EC4899;   /* Pink */
-            --accent-cyan: #00FFFF;  /* Cyan */
-            --stroke-dark: #16213E;  /* Darker Navy */
+            --bg: #0a0a0a;
+            --bg-card: #111111;
+            --bg-elevated: #181818;
+            --border: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.12);
+            --text: #f5f5f5;
+            --text-dim: rgba(255,255,255,0.5);
+            --text-muted: rgba(255,255,255,0.25);
+            --accent: #f5f5f5;
         }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: 'Quattrocento', serif;
-            background-color: var(--bg-main);
-            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
         }
-        .title-font {
-            font-family: 'Londrina Solid', cursive;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.2), 0 0 15px var(--accent-light);
-            color: var(--accent-light);
-            -webkit-text-stroke: 1.5px var(--stroke-dark);
+
+        .serif { font-family: 'Playfair Display', Georgia, serif; }
+
+        /* ── Screens ── */
+        .screen { width: 100%; max-width: 440px; margin: 0 auto; }
+        .screen.hidden { display: none; }
+
+        /* ── Animations ── */
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+        @keyframes orbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+
+        .fade-up { animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .fade-in { animation: fadeIn 0.6s ease forwards; }
+
+        /* ── Landing ── */
+        .landing-header { text-align: center; margin-bottom: 48px; }
+        .landing-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: clamp(2.5rem, 8vw, 3.5rem);
+            letter-spacing: -0.03em;
+            line-height: 1;
+            margin-bottom: 12px;
         }
-        .main-container { transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-        .form-input {
-            background-color: rgba(0, 0, 0, 0.2);
-            border: 2px solid rgba(224, 221, 240, 0.2);
-            transition: all 0.3s ease;
-            color: var(--text-primary);
+        .landing-header p {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-dim);
+            letter-spacing: 0.02em;
         }
-        .form-input::placeholder { color: rgba(224, 221, 240, 0.5); opacity: 1; }
-        .form-input:focus {
-            background-color: rgba(0, 0, 0, 0.3);
-            border-color: var(--accent-light);
+
+        /* ── Form ── */
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+        }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group:last-of-type { margin-bottom: 28px; }
+
+        .input-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 18px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             outline: none;
-            box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
-            transform: scale(1.02);
+            transition: all 0.2s ease;
         }
-        .action-button {
-            background: linear-gradient(to right, var(--accent-light), var(--accent-dark));
-            color: var(--text-primary);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
-            transition: all 0.3s ease;
-            border: 2px solid var(--stroke-dark);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            font-family: 'Londrina Solid', cursive;
-            letter-spacing: 1px;
+        .input-field::placeholder { color: var(--text-muted); }
+        .input-field:focus {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.03);
         }
-        .action-button:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--bg);
+            background: var(--text);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
-        .action-button:active { transform: translateY(-1px) scale(1.01); }
-        .card-container {
-            background: linear-gradient(160deg, #16213E, #1A1A2E);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.3);
-            border: 2px solid var(--accent-light);
-            transform-style: preserve-3d;
+        .submit-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .submit-btn:active { transform: translateY(0); opacity: 0.9; }
+
+        /* ── Loading ── */
+        .loading-container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
         }
-        #card-image { transition: transform 0.5s ease; border-radius: 0.5rem; }
-        .card-container:hover #card-image { transform: scale(1.05); }
-        .footer-credits { font-size: 0.8rem; color: rgba(224, 221, 240, 0.6); }
-        .footer-credits a { color: var(--accent-light); transition: all 0.3s; font-weight: bold; }
-        .footer-credits a:hover { color: white; text-shadow: 0 0 8px var(--accent-light); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-in { animation: fadeIn 1s ease-out forwards; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        #loading-spinner {
-            border-radius: 50%; width: 80px; height: 80px;
-            border: 4px solid rgba(224, 221, 240, 0.2);
-            border-top-color: var(--accent-light);
-            animation: spin 1s linear infinite;
+
+        .oracle-eye {
+            width: 80px; height: 80px;
+            position: relative;
+            margin-bottom: 32px;
         }
+        .oracle-eye .ring {
+            position: absolute; inset: 0;
+            border: 2px solid var(--border);
+            border-top-color: var(--text);
+            border-radius: 50%;
+            animation: orbit 2s linear infinite;
+        }
+        .oracle-eye .ring:nth-child(2) {
+            inset: 12px;
+            animation-duration: 3s;
+            animation-direction: reverse;
+            border-top-color: var(--text-dim);
+        }
+        .oracle-eye .core {
+            position: absolute;
+            inset: 28px;
+            background: var(--text);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .loading-text {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dim);
+            letter-spacing: 0.04em;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* ── Result Card ── */
+        .result-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .result-image-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            background: var(--bg);
+        }
+        .result-image-wrap img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .result-card:hover .result-image-wrap img { transform: scale(1.03); }
+
+        .result-image-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, var(--bg-card));
+            pointer-events: none;
+        }
+
+        .result-body { padding: 28px 28px 24px; }
+
+        .result-meta {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .result-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .result-prophecy {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-dim);
+            padding: 20px;
+            background: var(--bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .result-prophecy::before {
+            content: '\201C';
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            font-style: normal;
+            position: absolute;
+            top: 6px; left: 14px;
+            color: var(--text-muted);
+            line-height: 1;
+        }
+
+        .result-footer {
+            padding: 16px 28px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .result-footer-credit {
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+        }
+        .result-footer-badge {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        /* ── Action buttons ── */
+        .actions { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--bg);
+            background: var(--text);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover { opacity: 0.85; }
+
+        .btn-ghost {
+            width: 100%;
+            padding: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-dim);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-ghost:hover { border-color: var(--border-hover); color: var(--text); }
+
+        /* ── Footer ── */
+        .page-footer {
+            text-align: center;
+            margin-top: 32px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            body { padding: 16px; }
+            .form-card { padding: 24px; }
+            .result-body { padding: 24px 20px 20px; }
+            .result-footer { padding: 14px 20px 16px; }
+        }
+
+        /* ── Audio visualizer bar ── */
+        .audio-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            height: 20px;
+            margin-top: 12px;
+        }
+        .audio-bar .bar {
+            width: 3px;
+            height: 4px;
+            background: var(--text-dim);
+            border-radius: 2px;
+            animation: barPulse 0.8s ease-in-out infinite;
+        }
+        .audio-bar .bar:nth-child(1) { animation-delay: 0s; }
+        .audio-bar .bar:nth-child(2) { animation-delay: 0.15s; }
+        .audio-bar .bar:nth-child(3) { animation-delay: 0.3s; }
+        .audio-bar .bar:nth-child(4) { animation-delay: 0.45s; }
+        .audio-bar .bar:nth-child(5) { animation-delay: 0.6s; }
+        @keyframes barPulse {
+            0%, 100% { height: 4px; }
+            50% { height: 16px; }
+        }
+
+        .audio-playing .bar { background: var(--text); }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body>
 
-    <div id="app" class="w-full max-w-md mx-auto">
-        <!-- Input Screen -->
-        <div id="input-screen" class="space-y-6 fade-in main-container">
-            <div class="text-center">
-                <h1 class="title-font text-7xl">Msg from Oracle</h1>
-                <p class="mt-2 font-semibold text-text-primary/80">The enlightenment you didn't ask for, but got anyway.</p>
+    <div id="app" style="width: 100%; max-width: 440px; margin: 0 auto;">
+
+        <!-- ━━━ INPUT SCREEN ━━━ -->
+        <div id="input-screen" class="screen fade-up">
+            <div class="landing-header">
+                <h1 class="serif">Msg from<br>Oracle</h1>
+                <p>The prophecy you never asked for.</p>
             </div>
-            <div class="bg-black/20 p-8 rounded-2xl shadow-lg border-2" style="border-color: var(--accent-cyan);">
-                <input type="text" id="name-input" placeholder="Nama" class="w-full p-3 rounded-lg form-input text-center text-lg">
-                <input type="text" id="aspiration-input" placeholder="Apa harapanmu hari ini?" class="w-full p-3 mt-5 rounded-lg form-input text-center text-lg">
-                <button id="draw-card-btn" class="w-full mt-5 py-3 rounded-lg text-2xl font-bold action-button">
-                    MINTA SAJAK
-                </button>
+
+            <div class="form-card">
+                <div class="input-group">
+                    <label class="input-label" for="name-input">Your Name</label>
+                    <input type="text" id="name-input" class="input-field" placeholder="What shall the Oracle call you?" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label class="input-label" for="aspiration-input">Your Deepest Wish</label>
+                    <input type="text" id="aspiration-input" class="input-field" placeholder="What do you secretly hope for?" autocomplete="off">
+                </div>
+                <button id="draw-card-btn" class="submit-btn">Summon the Oracle</button>
             </div>
-             <div class="text-center footer-credits px-4">
-                Powered by Gemini & <a href="https://www.instagram.com/beenspace" target="_blank" rel="noopener noreferrer">@beenspace</a>.
-                Forged by <a href="https://github.com/muqorrobinize" target="_blank" rel="noopener noreferrer">@muqorrobinize</a>.
+
+            <div class="page-footer">by alchemist4real</div>
+        </div>
+
+        <!-- ━━━ LOADING SCREEN ━━━ -->
+        <div id="loading-screen" class="screen hidden fade-in">
+            <div class="loading-container">
+                <div class="oracle-eye">
+                    <div class="ring"></div>
+                    <div class="ring"></div>
+                    <div class="core"></div>
+                </div>
+                <p id="loading-text" class="loading-text">Reaching beyond the veil...</p>
+                <div id="audio-visualizer" class="audio-bar" style="display:none;">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                </div>
             </div>
         </div>
 
-        <!-- Loading Screen -->
-        <div id="loading-screen" class="hidden text-center fade-in main-container">
-            <div id="loading-spinner" class="mx-auto mb-6"></div>
-            <p id="loading-text" class="text-xl font-semibold"></p>
-        </div>
-
-        <!-- Result Screen -->
-        <div id="result-screen" class="hidden w-full max-w-md mx-auto fade-in main-container">
-             <div id="shareable-dashboard" class="card-container p-6 rounded-2xl text-center">
-                <p class="text-sm text-text-primary/80">Sajak Semesta untuk <strong id="user-name-display" class="text-text-primary"></strong></p>
-                <p class="text-xs text-text-primary/60 mb-4">Atas harapan: "<em id="aspiration-display"></em>"</p>
-                <div class="my-4 p-1 bg-black/20 rounded-xl shadow-inner">
-                     <img id="card-image" src="" alt="Visual Sajak" class="w-full h-80 object-contain">
+        <!-- ━━━ RESULT SCREEN ━━━ -->
+        <div id="result-screen" class="screen hidden fade-up">
+            <div id="shareable-card" class="result-card">
+                <div class="result-image-wrap">
+                    <img id="card-image" src="" alt="Oracle Vision">
+                    <div class="result-image-overlay"></div>
                 </div>
-                <h2 id="card-name" class="title-font text-4xl"></h2>
-                <div class="bg-black/30 mt-4 p-4 rounded-xl border border-text-primary/20">
-                    <p id="prophecy-text" class="text-text-primary/90 text-sm leading-relaxed text-center"></p>
+                <div class="result-body">
+                    <p class="result-meta">
+                        Oracle speaks to <strong id="user-name-display"></strong>
+                        <br><span id="aspiration-display" style="color: var(--text-muted); font-style: italic;"></span>
+                    </p>
+                    <h2 id="card-name" class="result-title serif"></h2>
+                    <div id="prophecy-text" class="result-prophecy"></div>
                 </div>
-                <div class="text-xs text-pink-400/80 mt-4 footer-credits">
-                    Powered by Gemini & <a href="https://www.instagram.com/beenspace" target="_blank" rel="noopener noreferrer">@beenspace</a>,
-                    Forged by <a href="https://github.com/muqorrobinize" target="_blank" rel="noopener noreferrer">@muqorrobinize</a>.
+                <div class="result-footer">
+                    <span class="result-footer-credit">by alchemist4real</span>
+                    <span class="result-footer-badge">Msg from Oracle</span>
                 </div>
             </div>
-            <div class="mt-6 space-y-3">
-                <button id="download-btn" class="w-full py-3 rounded-lg text-xl font-bold action-button">
-                    Abadikan Sajak Ini
-                </button>
-                <button id="reset-btn" class="w-full py-3 rounded-lg text-md font-bold bg-black/20 text-text-primary hover:bg-black/40 transition-colors border-2 border-text-primary/30">
-                    Minta Sajak Lain
-                </button>
+
+            <div class="actions">
+                <button id="download-btn" class="btn-primary">Save Prophecy</button>
+                <button id="reset-btn" class="btn-ghost">Ask Again</button>
+            </div>
+
+            <div id="result-audio-bar" class="audio-bar audio-playing" style="display:none; margin-top: 16px;">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
             </div>
         </div>
     </div>
@@ -143,141 +436,172 @@
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const E = id => document.getElementById(id);
-        const elements = {
+        const el = {
             inputScreen: E('input-screen'), loadingScreen: E('loading-screen'),
-            resultScreen: E('result-screen'), nameInput: E('name-input'), 
-            aspirationInput: E('aspiration-input'), drawCardBtn: E('draw-card-btn'), 
-            resetBtn: E('reset-btn'), downloadBtn: E('download-btn'), loadingText: E('loading-text'), 
-            cardImage: E('card-image'), cardName: E('card-name'), prophecyText: E('prophecy-text'), 
-            userNameDisplay: E('user-name-display'), aspirationDisplay: E('aspiration-display'), 
-            ttsAudio: E('tts-audio'),
+            resultScreen: E('result-screen'), nameInput: E('name-input'),
+            aspirationInput: E('aspiration-input'), drawCardBtn: E('draw-card-btn'),
+            resetBtn: E('reset-btn'), downloadBtn: E('download-btn'), loadingText: E('loading-text'),
+            cardImage: E('card-image'), cardName: E('card-name'), prophecyText: E('prophecy-text'),
+            userNameDisplay: E('user-name-display'), aspirationDisplay: E('aspiration-display'),
+            ttsAudio: E('tts-audio'), audioViz: E('audio-visualizer'), resultAudioBar: E('result-audio-bar'),
         };
 
-        async function apiRequest(type, payload) {
-            const response = await fetch('/api/generate', {
+        // ── API helper ──
+        async function api(type, payload) {
+            const res = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type, payload })
             });
-
-            if (!response.ok) {
-                const errorBody = await response.json();
-                throw new Error(`API request failed: ${response.status} ${JSON.stringify(errorBody)}`);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(`API ${type} failed: ${res.status} ${JSON.stringify(err)}`);
             }
-            return response.json();
+            return res.json();
         }
 
-        const playAudioAndWait = (src) => new Promise(resolve => {
-            if (!src) { resolve(); return; }
-            elements.ttsAudio.src = src;
-            elements.ttsAudio.onended = resolve;
-            elements.ttsAudio.onerror = () => { console.error("Audio playback error."); resolve(); };
-            elements.ttsAudio.play().catch(err => { console.warn("Autoplay was prevented.", err); resolve(); });
-        });
-        
-        const createWavBlobUrl = (base64Data, mimeType) => {
-            const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
-            const binaryString = window.atob(base64Data);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) { bytes[i] = binaryString.charCodeAt(i); }
-            const pcm16 = new Int16Array(bytes.buffer);
-            const buffer = new ArrayBuffer(44 + pcm16.length * 2);
-            const view = new DataView(buffer);
-            view.setUint32(0, 0x52494646, false); // "RIFF"
-            view.setUint32(4, 36 + pcm16.length * 2, true); view.setUint32(8, 0x57415645, false); // "WAVE"
-            view.setUint32(12, 0x666d7420, false); // "fmt "
-            view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true); // PCM, Mono
-            view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true); // Byte rate
-            view.setUint16(32, 2, true); view.setUint16(34, 16, true); // Block align, Bits per sample
-            view.setUint32(36, 0x64617461, false); // "data"
-            view.setUint32(40, pcm16.length * 2, true);
-            for (let i = 0; i < pcm16.length; i++) { view.setInt16(44 + i * 2, pcm16[i], true); }
-            return URL.createObjectURL(new Blob([view], { type: 'audio/wav' }));
-        };
+        // ── Audio ──
+        function playAudio(src) {
+            return new Promise(resolve => {
+                if (!src) { resolve(); return; }
+                el.ttsAudio.src = src;
+                el.ttsAudio.onended = resolve;
+                el.ttsAudio.onerror = () => { console.error('Audio error'); resolve(); };
+                el.ttsAudio.play().catch(() => resolve());
+            });
+        }
 
-        async function handleDrawCard() {
-            const name = elements.nameInput.value.trim() || "Jiwa Tanpa Nama";
-            const aspiration = elements.aspirationInput.value.trim() || "sesuatu yang mustahil";
+        function makeWavUrl(b64, mime) {
+            const rate = parseInt(mime.match(/rate=(\d+)/)[1], 10);
+            const raw = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+            const pcm = new Int16Array(raw.buffer);
+            const buf = new ArrayBuffer(44 + pcm.length * 2);
+            const v = new DataView(buf);
+            // RIFF header
+            v.setUint32(0, 0x52494646, false); v.setUint32(4, 36 + pcm.length * 2, true);
+            v.setUint32(8, 0x57415645, false); v.setUint32(12, 0x666d7420, false);
+            v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+            v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+            v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+            v.setUint32(36, 0x64617461, false); v.setUint32(40, pcm.length * 2, true);
+            for (let i = 0; i < pcm.length; i++) v.setInt16(44 + i * 2, pcm[i], true);
+            return URL.createObjectURL(new Blob([v], { type: 'audio/wav' }));
+        }
 
-            elements.inputScreen.classList.add('hidden');
-            elements.loadingScreen.classList.remove('hidden');
-            
+        function showScreen(screen) {
+            [el.inputScreen, el.loadingScreen, el.resultScreen].forEach(s => s.classList.add('hidden'));
+            screen.classList.remove('hidden');
+        }
+
+        // ── Main flow ──
+        async function summonOracle() {
+            const name = el.nameInput.value.trim() || 'Nameless Seeker';
+            const wish = el.aspirationInput.value.trim() || 'something impossible';
+
+            showScreen(el.loadingScreen);
+
             try {
-                elements.loadingText.textContent = "Menghubungi Sang Pujangga...";
-                const greetingText = `Hening! Aku merasakan getaran resahmu, ${name}. Kau datang dengan harapan akan '${aspiration}'. Harapan sepele yang kau anggap penting. Baiklah, Aku, Pujangga Been, akan merangkai kata untukmu. Jangan berisik selagi aku berpikir.`;
-                const greetingAudioData = await apiRequest('greeting-tts', { text: greetingText });
-                await playAudioAndWait(greetingAudioData.url);
+                // Step 1: Greeting TTS
+                el.loadingText.textContent = 'The Oracle senses your presence...';
+                el.audioViz.style.display = 'flex';
 
-                elements.loadingText.textContent = "Merangkai kata dari resahmu...";
-                const systemPrompt = `Anda adalah Pujangga Sarkas bernama Been. Anda sinis terhadap harapan manusia tapi mengungkapkannya lewat puisi. Buat NAMA PUISI yang absurd, INTERPRETASI TERTULIS (puitis, netral, 1-2 kalimat), dan BISIKAN PUJANGGA (sangat mengejek, menyebut nama pengguna, dan memuji diri Anda. 2-3 kalimat). JAWAB HANYA DALAM FORMAT JSON {"card_name": "NAMA PUISI", "written_interpretation": "INTERPRETASI TERTULIS", "spoken_interpretation": "BISIKAN PUJANGGA"}. Semua teks dalam Bahasa Indonesia. Tanpa markdown.`;
-                // --- PERBAIKAN KUNCI DI SINI ---
-                const textPayload = { "systemInstruction": { "parts": [{ "text": systemPrompt }] }, "contents": [{ "parts": [{ "text": `Nama: ${name}, Harapan: ${aspiration}` }] }] };
-                const textDataRaw = await apiRequest('text', textPayload);
-                const tarotData = JSON.parse(textDataRaw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim());
+                const greetText = `Silence! I sense the trembling of your soul, ${name}. You come seeking '${wish}'. A trivial hope you consider monumental. Very well, I, the Oracle, shall weave words for you. Be still while I think.`;
+                const greetData = await api('greeting-tts', { text: greetText });
+                await playAudio(greetData.url);
+                el.audioViz.style.display = 'none';
 
-                elements.loadingText.textContent = "Memaksa seniman gaib & merekam bisikan...";
-                const imagePayload = { instances: [{ prompt: `An abstract, psychedelic artwork representing a poem titled "${tarotData.card_name}". Style of 1970s rock posters, trippy, surreal, illustrative, vibrant dark navy blue, hot pink and cyan, detailed.` }], parameters: { "sampleCount": 1 } };
-                const ttsPayload = { contents: [{ parts: [{ text: `Ucapkan dalam bahasa Indonesia dengan suara berat, puitis, dan sedikit mengejek: ${tarotData.spoken_interpretation}` }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Algenib' } } } } };
-                
-                const [imageData, ttsData] = await Promise.all([
-                    apiRequest('image', imagePayload),
-                    apiRequest('tts', ttsPayload)
+                // Step 2: Generate poem
+                el.loadingText.textContent = 'Weaving fate from your desires...';
+                const sysPrompt = `You are a Sarcastic Oracle Poet. You are cynical about human hopes but express it through poetry. Create a POEM TITLE (absurd and dramatic), a WRITTEN PROPHECY (poetic, neutral-toned, beautifully crafted, 2-3 sentences), and a SPOKEN WHISPER (very mocking, addresses the user by name, self-praising. 2-3 sentences). RESPOND ONLY IN JSON: {"card_name": "POEM TITLE", "written_interpretation": "WRITTEN PROPHECY", "spoken_interpretation": "SPOKEN WHISPER"}. All text in English. No markdown.`;
+                const textPayload = {
+                    systemInstruction: { parts: [{ text: sysPrompt }] },
+                    contents: [{ parts: [{ text: `Name: ${name}, Wish: ${wish}` }] }]
+                };
+                const textRaw = await api('text', textPayload);
+                const oracle = JSON.parse(textRaw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim());
+
+                // Step 3: Image + TTS in parallel
+                el.loadingText.textContent = 'Conjuring visions and whispers...';
+                const imgPayload = {
+                    instances: [{ prompt: `A hauntingly beautiful abstract artwork for a poem titled "${oracle.card_name}". Ethereal, minimal, dark void with subtle light, cinematic atmosphere, moody, fine art photography style, black and white with subtle warm tones, dramatic lighting.` }],
+                    parameters: { sampleCount: 1 }
+                };
+                const ttsPayload = {
+                    contents: [{ parts: [{ text: `Speak in a deep, poetic, slightly mocking English voice: ${oracle.spoken_interpretation}` }] }],
+                    generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Algenib' } } } }
+                };
+
+                const [imgData, ttsData] = await Promise.all([
+                    api('image', imgPayload),
+                    api('tts', ttsPayload)
                 ]);
 
-                const imageUrl = `data:image/png;base64,${imageData.predictions[0].bytesBase64Encoded}`;
+                const imgUrl = `data:image/png;base64,${imgData.predictions[0].bytesBase64Encoded}`;
                 const ttsPart = ttsData?.candidates?.[0]?.content?.parts?.[0];
-                const interpretationAudioUrl = ttsPart ? createWavBlobUrl(ttsPart.inlineData.data, ttsPart.inlineData.mimeType) : null;
-                
-                elements.cardName.textContent = tarotData.card_name;
-                elements.prophecyText.textContent = tarotData.written_interpretation;
-                elements.userNameDisplay.textContent = name;
-                elements.aspirationDisplay.textContent = aspiration;
-                elements.cardImage.src = imageUrl;
+                const whisperUrl = ttsPart ? makeWavUrl(ttsPart.inlineData.data, ttsPart.inlineData.mimeType) : null;
 
-                await new Promise((resolve) => {
-                    elements.cardImage.onload = resolve;
-                    elements.cardImage.onerror = () => {
-                        console.error("Failed to load generated image, using placeholder.");
-                        elements.cardImage.src = `https://placehold.co/600x400/1A1A2E/F472B6/?text=${encodeURIComponent(tarotData.card_name)}`;
+                // Populate result
+                el.cardName.textContent = oracle.card_name;
+                el.prophecyText.textContent = oracle.written_interpretation;
+                el.userNameDisplay.textContent = name;
+                el.aspirationDisplay.textContent = `"${wish}"`;
+                el.cardImage.src = imgUrl;
+
+                await new Promise(resolve => {
+                    el.cardImage.onload = resolve;
+                    el.cardImage.onerror = () => {
+                        el.cardImage.src = `https://placehold.co/800x600/0a0a0a/333333?text=${encodeURIComponent(oracle.card_name)}`;
                         resolve();
                     };
                 });
-                
-                elements.loadingScreen.classList.add('hidden');
-                elements.resultScreen.classList.remove('hidden');
-                await playAudioAndWait(interpretationAudioUrl);
 
-            } catch (error) {
-                console.error("Terjadi gangguan dalam proses:", error);
-                elements.loadingText.textContent = "Ada gangguan, coba lagi nanti.";
-                setTimeout(() => {
-                    elements.loadingScreen.classList.add('hidden');
-                    elements.inputScreen.classList.remove('hidden');
-                }, 3000);
+                showScreen(el.resultScreen);
+
+                // Play the spoken whisper
+                if (whisperUrl) {
+                    el.resultAudioBar.style.display = 'flex';
+                    await playAudio(whisperUrl);
+                    el.resultAudioBar.style.display = 'none';
+                }
+
+            } catch (err) {
+                console.error('Oracle error:', err);
+                el.audioViz.style.display = 'none';
+                el.loadingText.textContent = 'The veil resists. Try again shortly.';
+                setTimeout(() => showScreen(el.inputScreen), 3000);
             }
         }
 
+        // ── Download ──
         function downloadResult() {
-            html2canvas(E('shareable-dashboard'), { backgroundColor: "#16213E", useCORS: true, scale: 2 })
-            .then(canvas => {
-                const link = document.createElement('a');
-                const safeName = (elements.nameInput.value.trim() || 'fana').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                link.download = `sajak_pujangga_${safeName}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            }).catch(err => console.error("Gagal mengunduh gambar:", err));
+            html2canvas(E('shareable-card'), {
+                backgroundColor: '#0a0a0a', useCORS: true, scale: 2
+            }).then(canvas => {
+                const a = document.createElement('a');
+                const safeName = (el.nameInput.value.trim() || 'seeker').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                a.download = `oracle_${safeName}_${Date.now()}.png`;
+                a.href = canvas.toDataURL('image/png');
+                a.click();
+            }).catch(err => console.error('Download failed:', err));
         }
 
+        // ── Reset ──
         function resetApp() {
-            elements.resultScreen.classList.add('hidden');
-            elements.inputScreen.classList.remove('hidden');
-            elements.nameInput.value = '';
-            elements.aspirationInput.value = '';
+            showScreen(el.inputScreen);
+            el.nameInput.value = '';
+            el.aspirationInput.value = '';
+            el.ttsAudio.pause();
+            el.resultAudioBar.style.display = 'none';
         }
 
-        elements.drawCardBtn.addEventListener('click', handleDrawCard);
-        elements.resetBtn.addEventListener('click', resetApp);
-        elements.downloadBtn.addEventListener('click', downloadResult);
+        // ── Events ──
+        el.drawCardBtn.addEventListener('click', summonOracle);
+        el.resetBtn.addEventListener('click', resetApp);
+        el.downloadBtn.addEventListener('click', downloadResult);
+
+        // Enter key support
+        el.nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') el.aspirationInput.focus(); });
+        el.aspirationInput.addEventListener('keydown', e => { if (e.key === 'Enter') summonOracle(); });
     });
     </script>
 </body>

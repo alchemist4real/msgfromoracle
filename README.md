@@ -1,69 +1,30 @@
-Msg from Oracle (Vercel Deployment)
+# Msg from Oracle
 
-Ini adalah proyek web "Msg from Oracle" yang siap untuk di-deploy menggunakan Vercel.
+The prophecy you never asked for. An AI-powered oracle that weaves sarcastic poetry from your deepest wishes.
 
-Struktur Proyek
+## How It Works
 
-index.html: File utama antarmuka pengguna (frontend).
+1. Enter your name and a secret wish
+2. The Oracle speaks — a greeting voiced through the void
+3. A poem is conjured, an artwork manifested, a whisper delivered
+4. Save the prophecy as an image
 
-api/generate.js: Serverless Function yang akan dijalankan oleh Vercel sebagai backend. File ini mengelola semua panggilan ke API eksternal (Gemini dan VoiceRSS) secara aman.
+## Tech Stack
 
-package.json: Konfigurasi dasar proyek.
+- **Frontend**: Vanilla HTML/CSS/JS (no frameworks)
+- **Backend**: Vercel Serverless Function (`/api/generate.js`)
+- **AI**: Google Gemini (text + image + TTS)
+- **Voice**: VoiceRSS (greeting TTS)
 
-README.md: Panduan ini.
+## Deploy to Vercel
 
-Cara Deploy ke Vercel
+1. Push this repo to GitHub
+2. Connect the repo on [Vercel](https://vercel.com)
+3. Add these **Environment Variables**:
+   - `GEMINI_API_KEYS` — comma-separated Gemini API keys
+   - `VOICERSS_API_KEY` — your VoiceRSS API key
+4. Deploy. Done.
 
-Unggah ke GitHub:
+## Credit
 
-Pastikan Anda sudah memiliki akun GitHub.
-
-Buat repositori baru di GitHub.
-
-Unggah semua file dari proyek ini (index.html, package.json, README.md, dan folder api beserta isinya) ke repositori tersebut.
-
-Hubungkan ke Vercel:
-
-Buka Vercel dan login (bisa menggunakan akun GitHub Anda).
-
-Klik "Add New..." -> "Project".
-
-Pilih repositori GitHub yang baru saja Anda buat. Vercel akan otomatis mendeteksinya sebagai proyek statis dengan Serverless Functions.
-
-Biarkan semua pengaturan default dan klik "Deploy".
-
-Tambahkan Environment Variables (SANGAT PENTING):
-
-Setelah proyek berhasil di-deploy, buka dashboard proyek di Vercel.
-
-Masuk ke tab "Settings" -> "Environment Variables".
-
-Tambahkan variabel berikut satu per satu:
-
-GEMINI_API_KEYS:
-
-Key: GEMINI_API_KEYS
-
-Value: Masukkan semua kunci API Gemini Anda, dipisahkan dengan koma (tanpa spasi).
-
-Contoh Value: AIzaSy...zc8,AIzaSy...voQ,AIzaSy...os8
-
-VOICERSS_API_KEY:
-
-Key: VOICERSS_API_KEY
-
-Value: Masukkan kunci API VoiceRSS Anda.
-
-Contoh Value: 2bca63c883a0455cbdba6a251782cb9f
-
-Pastikan untuk TIDAK mencentang kotak "Encrypt". Vercel akan menanganinya secara aman.
-
-Redeploy:
-
-Setelah menyimpan environment variables, Vercel akan meminta Anda untuk melakukan redeploy (deploy ulang) agar perubahan diterapkan.
-
-Buka tab "Deployments", pilih deployment terakhir, klik menu titik tiga (...) dan pilih "Redeploy".
-
-Selesai!
-
-Kunjungi domain Vercel Anda untuk melihat aplikasi berjalan dengan kunci API yang aman.
+by **alchemist4real**
