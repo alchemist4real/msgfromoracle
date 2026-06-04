@@ -366,19 +366,19 @@
         <div id="input-screen" class="screen fade-up">
             <div class="landing-header">
                 <h1 class="serif">Msg from<br>Oracle</h1>
-                <p>The prophecy you never asked for.</p>
+                <p>Ramalan yang tak pernah kau minta.</p>
             </div>
 
             <div class="form-card">
                 <div class="input-group">
-                    <label class="input-label" for="name-input">Your Name</label>
-                    <input type="text" id="name-input" class="input-field" placeholder="What shall the Oracle call you?" autocomplete="off">
+                    <label class="input-label" for="name-input">Nama Anda</label>
+                    <input type="text" id="name-input" class="input-field" placeholder="Siapa nama yang akan Oracle sebut?" autocomplete="off">
                 </div>
                 <div class="input-group">
-                    <label class="input-label" for="aspiration-input">Your Deepest Wish</label>
-                    <input type="text" id="aspiration-input" class="input-field" placeholder="What do you secretly hope for?" autocomplete="off">
+                    <label class="input-label" for="aspiration-input">Harapan Terdalam</label>
+                    <input type="text" id="aspiration-input" class="input-field" placeholder="Apa yang diam-diam kau harapkan?" autocomplete="off">
                 </div>
-                <button id="draw-card-btn" class="submit-btn">Summon the Oracle</button>
+                <button id="draw-card-btn" class="submit-btn">Panggil Oracle</button>
             </div>
 
             <div class="page-footer">by alchemist4real</div>
@@ -392,7 +392,7 @@
                     <div class="ring"></div>
                     <div class="core"></div>
                 </div>
-                <p id="loading-text" class="loading-text">Reaching beyond the veil...</p>
+                <p id="loading-text" class="loading-text">Menembus tabir kehampaan...</p>
                 <div id="audio-visualizer" class="audio-bar" style="display:none;">
                     <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
                 </div>
@@ -408,7 +408,7 @@
                 </div>
                 <div class="result-body">
                     <p class="result-meta">
-                        Oracle speaks to <strong id="user-name-display"></strong>
+                        Oracle berbicara kepada <strong id="user-name-display"></strong>
                         <br><span id="aspiration-display" style="color: var(--text-muted); font-style: italic;"></span>
                     </p>
                     <h2 id="card-name" class="result-title serif"></h2>
@@ -421,8 +421,8 @@
             </div>
 
             <div class="actions">
-                <button id="download-btn" class="btn-primary">Save Prophecy</button>
-                <button id="reset-btn" class="btn-ghost">Ask Again</button>
+                <button id="download-btn" class="btn-primary">Simpan Ramalan</button>
+                <button id="reset-btn" class="btn-ghost">Tanya Lagi</button>
             </div>
 
             <div id="result-audio-bar" class="audio-bar audio-playing" style="display:none; margin-top: 16px;">
@@ -502,17 +502,17 @@
 
             try {
                 // Step 1: Greeting TTS
-                el.loadingText.textContent = 'The Oracle senses your presence...';
+                el.loadingText.textContent = 'Oracle merasakan kehadiranmu...';
                 el.audioViz.style.display = 'flex';
 
-                const greetText = `Silence! I sense the trembling of your soul, ${name}. You come seeking '${wish}'. A trivial hope you consider monumental. Very well, I, the Oracle, shall weave words for you. Be still while I think.`;
+                const greetText = `Diam! Aku merasakan getar jiwamu, ${name}. Kau datang mencari '${wish}'. Harapan remeh yang kau anggap monumental. Baiklah, Aku, sang Oracle, akan merangkai kata untukmu. Tenanglah saat aku berpikir.`;
                 const greetData = await api('greeting-tts', { text: greetText });
                 await playAudio(greetData.url);
                 el.audioViz.style.display = 'none';
 
                 // Step 2: Generate poem
-                el.loadingText.textContent = 'Weaving fate from your desires...';
-                const sysPrompt = `You are a Sarcastic Oracle Poet. You are cynical about human hopes but express it through poetry. Create a POEM TITLE (absurd and dramatic), a WRITTEN PROPHECY (poetic, neutral-toned, beautifully crafted, 2-3 sentences), and a SPOKEN WHISPER (very mocking, addresses the user by name, self-praising. 2-3 sentences). RESPOND ONLY IN JSON: {"card_name": "POEM TITLE", "written_interpretation": "WRITTEN PROPHECY", "spoken_interpretation": "SPOKEN WHISPER"}. All text in English. No markdown.`;
+                el.loadingText.textContent = 'Menenun takdir dari ambisimu...';
+                const sysPrompt = `You are a Sarcastic Oracle Poet. You are cynical about human hopes but express it through poetry. Create a POEM TITLE (absurd and dramatic), a WRITTEN PROPHECY (poetic, neutral-toned, beautifully crafted, 2-3 sentences), and a SPOKEN WHISPER (very mocking, addresses the user by name, self-praising. 2-3 sentences). RESPOND ONLY IN JSON: {"card_name": "POEM TITLE", "written_interpretation": "WRITTEN PROPHECY", "spoken_interpretation": "SPOKEN WHISPER"}. All text in Indonesian. No markdown.`;
                 const textPayload = {
                     systemInstruction: { parts: [{ text: sysPrompt }] },
                     contents: [{ parts: [{ text: `Name: ${name}, Wish: ${wish}` }] }]
@@ -521,9 +521,9 @@
                 const oracle = JSON.parse(textRaw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim());
 
                 // Step 3: Image + TTS in parallel
-                el.loadingText.textContent = 'Conjuring visions and whispers...';
+                el.loadingText.textContent = 'Memanggil visi dan bisikan...';
                 const ttsPayload = {
-                    contents: [{ parts: [{ text: `Speak in a deep, poetic, slightly mocking English voice: ${oracle.spoken_interpretation}` }] }],
+                    contents: [{ parts: [{ text: `Speak in a deep, poetic, slightly mocking Indonesian voice: ${oracle.spoken_interpretation}` }] }],
                     generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Algenib' } } } }
                 };
 
@@ -560,7 +560,7 @@
             } catch (err) {
                 console.error('Oracle error:', err);
                 el.audioViz.style.display = 'none';
-                el.loadingText.textContent = 'The veil resists. Try again shortly.';
+                el.loadingText.textContent = 'Tabir menolak. Coba lagi nanti.';
                 setTimeout(() => showScreen(el.inputScreen), 3000);
             }
         }

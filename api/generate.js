@@ -78,8 +78,8 @@ export default async function handler(req, res) {
         const params = new URLSearchParams({
           key: voiceRssKey,
           src: payload.text,
-          hl: 'en-us',
-          v: 'John',
+          hl: 'id-id',
+          v: 'Budi',
           r: '-2',
           c: 'MP3',
           f: '16khz_16bit_stereo'
