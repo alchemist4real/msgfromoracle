@@ -112,8 +112,9 @@ export default async function handler(req, res) {
         const match = userPrompt.match(/Wish:\s*(.*)$/i);
         const wish = match ? match[1].trim() : userPrompt;
 
-        // 2. Fetch Polymarket
+        // 2. Fetch Polymarket & News Context
         let pmContext = "";
+        let newsContext = "";
         try {
           const pmRes = await fetch(`https://gamma-api.polymarket.com/events?active=true&closed=false&query=${encodeURIComponent(wish)}`);
           if (pmRes.ok) {
@@ -136,15 +137,29 @@ export default async function handler(req, res) {
           }
         } catch (e) { console.warn('Polymarket fetch failed:', e.message); }
 
+        try {
+          // Google News RSS fetch without API key
+          const newsRes = await fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(wish)}&hl=id&gl=ID&ceid=ID:id`);
+          if (newsRes.ok) {
+            const xml = await newsRes.text();
+            // Simple regex to extract <item><title>...</title></item>
+            const titleMatches = [...xml.matchAll(/<item>[\s\S]*?<title>(.*?)<\/title>/g)];
+            if (titleMatches.length > 0) {
+              const headlines = titleMatches.slice(0, 3).map(m => `- ${m[1]}`);
+              newsContext = `\n\nRECENT NEWS (Use to be more relatable/accurate):\n${headlines.join('\n')}`;
+            }
+          }
+        } catch (e) { console.warn('News fetch failed:', e.message); }
+
         // 3. Build dynamic System Prompt
         const dynamicSysPrompt = `You are a Sarcastic Oracle Poet. You are cynical about human hopes and questions.
 If the user asks a QUESTION (including asking for initials, predictions, or sports outcomes), you MUST directly answer it in a cynical, poetic way.
 - If they ask for initials, GIVE EXPLICIT INITIALS (e.g., "B. A." or "M. K.").
-- If they ask who will win a match or event, state the winner clearly based on the Polymarket Predictions provided below (if any), or make a cynical confident guess if no data is provided.
-If the input is a WISH or DESIRE, mock their ambition as usual.
+- If they ask who will win a match or event, state the winner clearly based on the Polymarket Predictions or Recent News provided below (if any), or make a cynical confident guess.
+If the input is a WISH or DESIRE, mock their ambition as usual, referencing the Recent News to sound more relatable if it makes sense.
 
 Create a POEM TITLE (absurd and dramatic), a WRITTEN PROPHECY (poetic, neutral-toned, beautifully crafted, 2-3 sentences, providing an explicit answer if a question was asked), and a SPOKEN WHISPER (very mocking, addresses the user by name, self-praising. 2-3 sentences).
-RESPOND ONLY IN JSON: {"card_name": "POEM TITLE", "written_interpretation": "WRITTEN PROPHECY", "spoken_interpretation": "SPOKEN WHISPER"}. All text in Indonesian. No markdown.${pmContext}`;
+RESPOND ONLY IN JSON: {"card_name": "POEM TITLE", "written_interpretation": "WRITTEN PROPHECY", "spoken_interpretation": "SPOKEN WHISPER"}. All text in Indonesian. No markdown.${pmContext}${newsContext}`;
 
         payload.systemInstruction = { parts: [{ text: dynamicSysPrompt }] };
 
