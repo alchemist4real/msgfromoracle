@@ -530,8 +530,15 @@
                 const ttsData = await api('tts', ttsPayload);
                 const safeSeed = encodeURIComponent(oracle.card_name.replace(/[^a-zA-Z0-9]/g, ''));
                 const imgUrl = `https://picsum.photos/seed/${safeSeed}/800/600?grayscale`;
-                const ttsPart = ttsData?.candidates?.[0]?.content?.parts?.[0];
-                const whisperUrl = ttsPart ? makeWavUrl(ttsPart.inlineData.data, ttsPart.inlineData.mimeType) : null;
+
+                // Handle TTS response: Gemini inline audio OR VoiceRSS URL fallback
+                let whisperUrl = null;
+                if (ttsData?.voicerss_fallback && ttsData?.url) {
+                    whisperUrl = ttsData.url;
+                } else {
+                    const ttsPart = ttsData?.candidates?.[0]?.content?.parts?.[0];
+                    whisperUrl = ttsPart ? makeWavUrl(ttsPart.inlineData.data, ttsPart.inlineData.mimeType) : null;
+                }
 
                 // Populate result
                 el.cardName.textContent = oracle.card_name;
