@@ -39,15 +39,28 @@ export default async function handler(req, res) {
 
     switch (type) {
       case 'text':
-        result = await tryKeys(async key => {
-          const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+        try {
+          result = await tryKeys(async key => {
+            const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+            return r.json();
           });
-          if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
-          return r.json();
-        });
+        } catch (err) {
+          console.warn("Text API failed, using fallback:", err.message);
+          const fallbacks = [
+            { card_name: "Kehampaan yang Tak Terhindarkan", written_interpretation: "Pada akhirnya, segala ambisimu akan memudar menjadi abu. Waktu tidak peduli dengan harapan-harapan kecilmu.", spoken_interpretation: "Sungguh menyedihkan. Kau mengejar angin, namun yang kau dapatkan hanyalah debu." },
+            { card_name: "Ilusi Sebuah Tujuan", written_interpretation: "Kau mengira memiliki kendali, namun takdir telah menulis akhir ceritamu. Usahamu hanyalah hiburan kosmis.", spoken_interpretation: "Tidakkah kau lelah? Berpura-pura bahwa pilihanmu memiliki makna di alam semesta yang dingin ini." },
+            { card_name: "Gema Kesunyian", written_interpretation: "Dunia tidak akan mengingat namamu. Dan harapan yang kau genggam erat, pada akhirnya akan menjadi beban terberatmu.", spoken_interpretation: "Mengharapkan keajaiban? Betapa naifnya. Oracle hanya melihat bayangan kegagalanmu yang menari." },
+            { card_name: "Langkah Menuju Jurang", written_interpretation: "Setiap langkah maju yang kau banggakan, sebenarnya membawamu lebih dekat pada tebing kekecewaan yang tak berdasar.", spoken_interpretation: "Teruslah melangkah, pencari. Jurang sudah menunggumu dengan pelukan dinginnya." },
+            { card_name: "Bintang yang Mati", written_interpretation: "Cahaya yang kau ikuti hanyalah pantulan dari masa lalu yang telah lama hancur. Masa depanmu sedingin luar angkasa.", spoken_interpretation: "Cahaya redup di matamu itu... segera, itu pun akan padam ditelan realita." }
+          ];
+          const fallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+          result = { candidates: [{ content: { parts: [{ text: JSON.stringify(fallback) }] } }] };
+        }
         break;
 
       case 'image':
@@ -63,15 +76,20 @@ export default async function handler(req, res) {
         break;
 
       case 'tts':
-        result = await tryKeys(async key => {
-          const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${key}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+        try {
+          result = await tryKeys(async key => {
+            const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${key}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+            return r.json();
           });
-          if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
-          return r.json();
-        });
+        } catch (err) {
+          console.warn("TTS API failed, returning empty audio:", err.message);
+          result = {}; 
+        }
         break;
 
       case 'greeting-tts':
