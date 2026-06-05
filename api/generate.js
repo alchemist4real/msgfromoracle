@@ -54,14 +54,14 @@ export default async function handler(req, res) {
   }
 
   // ── HuggingFace text generation ──
-  async function tryHuggingFace(userPrompt) {
+  async function tryHuggingFace(userPrompt, sysPrompt) {
     if (!hfKey) throw new Error('No HF key configured');
     console.log('Falling back to HuggingFace...');
 
     const hfPayload = {
       model: "mistralai/Mistral-Small-24B-Instruct-2501",
       messages: [
-        { role: "system", content: ORACLE_SYSTEM_PROMPT },
+        { role: "system", content: sysPrompt },
         { role: "user", content: userPrompt }
       ],
       max_tokens: 500,
@@ -106,8 +106,47 @@ export default async function handler(req, res) {
       // TEXT: Gemini → HuggingFace → Offline
       // ═══════════════════════════════════════════
       case 'text': {
-        // Extract user prompt from payload for HF fallback
         const userPrompt = payload?.contents?.[0]?.parts?.[0]?.text || 'Name: Seeker, Wish: peace';
+        
+        // 1. Extract wish text for Polymarket
+        const match = userPrompt.match(/Wish:\s*(.*)$/i);
+        const wish = match ? match[1].trim() : userPrompt;
+
+        // 2. Fetch Polymarket
+        let pmContext = "";
+        try {
+          const pmRes = await fetch(`https://gamma-api.polymarket.com/events?active=true&closed=false&query=${encodeURIComponent(wish)}`);
+          if (pmRes.ok) {
+            const events = await pmRes.json();
+            if (events && events.length > 0) {
+              const topEvents = events.slice(0, 3).map(e => {
+                const markets = (e.markets || []).map(m => {
+                  try {
+                    const outcomes = JSON.parse(m.outcomes || "[]");
+                    const prices = JSON.parse(m.outcomePrices || "[]");
+                    return outcomes.map((o, i) => `${o}: ${Math.round(prices[i] * 100)}%`).join(', ');
+                  } catch (e) { return ''; }
+                }).filter(Boolean);
+                return `- ${e.title}: ${markets.join(' | ')}`;
+              });
+              if (topEvents.length > 0) {
+                pmContext = `\n\nPOLYMARKET PREDICTIONS (Real-world odds):\n${topEvents.join('\n')}`;
+              }
+            }
+          }
+        } catch (e) { console.warn('Polymarket fetch failed:', e.message); }
+
+        // 3. Build dynamic System Prompt
+        const dynamicSysPrompt = `You are a Sarcastic Oracle Poet. You are cynical about human hopes and questions.
+If the user asks a QUESTION (including asking for initials, predictions, or sports outcomes), you MUST directly answer it in a cynical, poetic way.
+- If they ask for initials, GIVE EXPLICIT INITIALS (e.g., "B. A." or "M. K.").
+- If they ask who will win a match or event, state the winner clearly based on the Polymarket Predictions provided below (if any), or make a cynical confident guess if no data is provided.
+If the input is a WISH or DESIRE, mock their ambition as usual.
+
+Create a POEM TITLE (absurd and dramatic), a WRITTEN PROPHECY (poetic, neutral-toned, beautifully crafted, 2-3 sentences, providing an explicit answer if a question was asked), and a SPOKEN WHISPER (very mocking, addresses the user by name, self-praising. 2-3 sentences).
+RESPOND ONLY IN JSON: {"card_name": "POEM TITLE", "written_interpretation": "WRITTEN PROPHECY", "spoken_interpretation": "SPOKEN WHISPER"}. All text in Indonesian. No markdown.${pmContext}`;
+
+        payload.systemInstruction = { parts: [{ text: dynamicSysPrompt }] };
 
         // Layer 1: Gemini
         try {
@@ -126,7 +165,7 @@ export default async function handler(req, res) {
 
           // Layer 2: HuggingFace
           try {
-            result = await tryHuggingFace(userPrompt);
+            result = await tryHuggingFace(userPrompt, dynamicSysPrompt);
             console.log('Text: served by HuggingFace');
           } catch (hfErr) {
             console.warn('Text HuggingFace failed:', hfErr.message);
